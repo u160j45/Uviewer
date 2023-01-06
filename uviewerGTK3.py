@@ -13,10 +13,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 
-from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance
+from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance, ImageDraw
 from Uclass import Imagemodify
 
-CATEGORIE_FILTRE = ["Dessin", "Négatif",  "uLSD", "uModif", "uGrayscale"]
+CATEGORIE_FILTRE = ["Dessin", "Négatif",  "uBlurred_edge", "uModif", "uGrayscale"]
 LARGEURMAX = Gdk.Screen().width() - 200
 HAUTEURMAX = Gdk.Screen().height() - 250
 
@@ -88,8 +88,13 @@ class Main():
 				self.thread.start()
 				self.startProgressbar(self)
 			self.confirmation()
-		
-		
+			
+			if self.choice == "uBlurred_edge":
+				self.thread = threading.Thread(target=self.blurred_edge)
+				self.thread.start()
+				self.startProgressbar(self)
+			self.confirmation()
+			
 		
 	'''Les Fonctions pour afficher l'image en fonction de  sa taille et de celle de l'ecran '''
 	def image_display(self, widget):
@@ -221,8 +226,20 @@ class Main():
 		imageDessin.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.image_modify_display(self)
+	
+	def blurred_edge(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
 		
-		
+		if self.mode == "Normal": 
+			newIm = Imagemodify.blurred_edge(image, forme = "rectangle")
+			
+		if self.mode == "Darken":
+			newIm = Imagemodify.blurred_edge(image, forme = "ellipse")
+			
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
 		
 		
 	''' Création de l'interface '''
