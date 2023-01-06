@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance
+from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance, ImageDraw
 
 class Imagemodify:
 	
@@ -128,7 +128,7 @@ class Imagemodify:
 			draw.ellipse([delimitateurH1, delimitateurH1, delimitateurW2 , delimitateurH2],fill=000, width=1)
 		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
 		
-		image.paste(imCrop2, ((delimitateurH1, delimitateurH1, delimitateurL2 , delimitateurH2)))
+		image.paste(imCrop2, ((delimitateurH1, delimitateurH1, delimitateurW2 , delimitateurH2)))
 		
 		newim = ImageChops.composite(imEdge, image, calque)
 		return newim
