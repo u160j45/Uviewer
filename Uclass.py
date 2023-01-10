@@ -97,25 +97,31 @@ class Imagemodify:
 			imGrayU = Imagemodify.uGrayscale(image, color = "grayU")
 			imageDessin = ImageChops.composite(imageDessin, imGrayU, imagecalque) #Origine gray
 			
+		if mode == "peinture":
+			#im1 = Imagemodify.dessin(image, mode ="normal")
+			#imageDessin = image.filter(ImageFilter.CONTOUR)
+			#im2 = image.filter(ImageFilter.ModeFilter(6))
+			#imageDessin = Image.blend(im1, im2, 0.5)
+			imageDessin = image.filter(ImageFilter.ModeFilter(6))
+			
 		if image.mode == 'RGBA':
 			imageDessin =  Imagemodify.addAlpha(image, imageDessin)
 			
 		return imageDessin
 	
 	def blurred_edge(im, ratio = 10, forme = "rectangle"):
-		''' Plus le ratio est grand plus la bordure sera petite '''
+		''' rajoute de la nettetée au centre et du flou sur les bords
+		plus le ratio est grand plus la bordure sera petite, forme rectangle ou ellipse 
+		'''
 		image = im
 		width, height = image.size
 		
-		delimitateurW1 = (width//ratio)
-		delimitateurW2 = (width//ratio)*(ratio - 1)
-		delimitateurH1 = (height//ratio)
-		delimitateurH2 = (height//ratio)*(ratio - 1)
+		box = ((width//ratio), (height//ratio), (width//ratio)*(ratio-1), (height//ratio)*(ratio-1))
 		
 		imEdge = image.filter(ImageFilter.BLUR)
 		#imEdge =  Imagemodify.color(imEdge, factor = 0.8)
 		
-		imCrop2 = im.crop((delimitateurH1, delimitateurH1, delimitateurW2 , delimitateurH2)) #(gauche, supérieur, droit, inférieur)
+		imCrop2 = im.crop(box) #(gauche, supérieur, droit, inférieur)
 		imCrop2 = Imagemodify.sharpness(imCrop2, factor = 2.0) # Augmente netteté (sharpness)
 		imCrop2 = Imagemodify.color(imCrop2, factor = 1.2) # Augmente color
 		#imCrop2 = Imagemodify.contrast(imCrop2, factor = 1.2) # AUgmente contrast
@@ -123,12 +129,12 @@ class Imagemodify:
 		calque = Image.new('L', (width, height), 255)
 		draw = ImageDraw.Draw(calque)
 		if forme == "rectangle":
-			draw.rounded_rectangle([delimitateurH1, delimitateurH1, delimitateurW2 , delimitateurH2],fill=000, width=1, radius=44)
+			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1, radius=44)
 		if forme == "ellipse":
-			draw.ellipse([delimitateurH1, delimitateurH1, delimitateurW2 , delimitateurH2],fill=000, width=1)
+			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1)
 		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
 		
-		image.paste(imCrop2, ((delimitateurH1, delimitateurH1, delimitateurW2 , delimitateurH2)))
+		image.paste(imCrop2, (box))
 		
 		newim = ImageChops.composite(imEdge, image, calque)
 		return newim
@@ -146,7 +152,7 @@ class Imagemodify:
 		newIm = enhancerSharpness.enhance(factor)
 		return newIm
 	
-	def contrast(im, factor = 1.5):
+	def contrast(im, factor = 1.2):
 		image = im
 		enhancerContrast = ImageEnhance.Contrast(image)
 		newIm = enhancerContrast.enhance(factor)
