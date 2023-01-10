@@ -81,7 +81,6 @@ class Imagemodify:
 	def dessin( im, mode = "normal", factor = 1.2):
 		image = im
 		if mode == "normal": 
-			#imageDessin = image.filter(ImageFilter.CONTOUR)#artistique
 			imageDessin = image.filter(ImageFilter.EDGE_ENHANCE_MORE)
 			imagecalque  =  Imagemodify.uGrayscale(image, color = "blackWhite")
 			imBlur =  image.filter(ImageFilter.BLUR)
@@ -90,7 +89,6 @@ class Imagemodify:
 			#imageDessin = ImageChops.composite(imageDessin, imBlur, imagecalque)
 			imageDessin =  ImageChops.darker(imageDessin, image)
 			
-			#imageDessin =  ImageChops.difference(imageDessin, image)#artistique
 		if mode == "darken": 
 			imageDessin = image.filter(ImageFilter.EDGE_ENHANCE_MORE)
 			imagecalque  =  Imagemodify.uGrayscale(image, color = "blackWhite")
@@ -98,10 +96,6 @@ class Imagemodify:
 			imageDessin = ImageChops.composite(imageDessin, imGrayU, imagecalque) #Origine gray
 			
 		if mode == "peinture":
-			#im1 = Imagemodify.dessin(image, mode ="normal")
-			#imageDessin = image.filter(ImageFilter.CONTOUR)
-			#im2 = image.filter(ImageFilter.ModeFilter(6))
-			#imageDessin = Image.blend(im1, im2, 0.5)
 			imageDessin = image.filter(ImageFilter.ModeFilter(6))
 			
 		if image.mode == 'RGBA':
@@ -117,11 +111,11 @@ class Imagemodify:
 		width, height = image.size
 		
 		box = ((width//ratio), (height//ratio), (width//ratio)*(ratio-1), (height//ratio)*(ratio-1))
+		imEdge = image.filter(ImageFilter.MinFilter(size=3)) # assombri 
+		imEdge = imEdge.filter(ImageFilter.BLUR) # floute
+		#imEdge = image.filter(ImageFilter.BLUR)
 		
-		imEdge = image.filter(ImageFilter.BLUR)
-		#imEdge =  Imagemodify.color(imEdge, factor = 0.8)
-		
-		imCrop2 = im.crop(box) #(gauche, supérieur, droit, inférieur)
+		imCrop2 = im.crop(box) 
 		imCrop2 = Imagemodify.sharpness(imCrop2, factor = 2.0) # Augmente netteté (sharpness)
 		imCrop2 = Imagemodify.color(imCrop2, factor = 1.2) # Augmente color
 		#imCrop2 = Imagemodify.contrast(imCrop2, factor = 1.2) # AUgmente contrast
