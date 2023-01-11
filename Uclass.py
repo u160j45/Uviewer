@@ -133,7 +133,38 @@ class Imagemodify:
 		newim = ImageChops.composite(imEdge, image, calque)
 		return newim
 		
-	
+	def old_school(im, mode = "normal"):
+		image = im
+		datas = image.getdata()
+		newim = Image.new(image.mode,  image.size)
+		new_image_data = []
+		
+		if mode == "normal": 
+			for item in datas:
+				if  item[2] in list(range(0, 75)):
+					new_image_data.append((102, 0, 0))# rouge foncer 
+				if  item[2] in list(range(75, 150)):
+					new_image_data.append((200, 100, 30)) # Orange foncer
+				if  item[2] in list(range(150, 225)) :  #151,170
+					new_image_data.append((218,165,32))
+				if item[2]  in list(range(225, 256)):
+					new_image_data.append((255,215,0))#or
+			newim.putdata(new_image_data)
+			
+		if mode == "darken": 
+			for item in datas:
+				if  item[2] in list(range(0, 50)):
+					new_image_data.append((102, 0, 0))# rouge foncer 
+				if  item[2] in list(range(50, 100)):
+					new_image_data.append((200, 100, 30)) # Orange foncer
+				if  item[2] in list(range(100, 200)):  #151,170
+					new_image_data.append((218,165,32))
+				if item[2]  in list(range(200, 256)):
+					new_image_data.append((255,215,0))#or
+			newim.putdata(new_image_data)	
+		
+		return newim
+		
 	def color(im, factor = 1.2):
 		image = im
 		enhancerColor = ImageEnhance.Color(image)
