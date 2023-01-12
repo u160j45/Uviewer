@@ -13,10 +13,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 
-from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance, ImageDraw
+from PIL import Image
 from Uclass import Imagemodify
 
-CATEGORIE_FILTRE = ["Dessin", "Négatif",  "uBlurred_edge", "uModif", "uGrayscale"]
+CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "uBlurred_edge", "uModif", "uGrayscale"]
 LARGEURMAX = Gdk.Screen().width() - 200
 HAUTEURMAX = Gdk.Screen().height() - 250
 
@@ -95,6 +95,11 @@ class Main():
 				self.startProgressbar(self)
 			self.confirmation()
 			
+			if self.choice == "Old_School":
+				self.thread = threading.Thread(target=self.old_school)
+				self.thread.start()
+				self.startProgressbar(self)
+			self.confirmation()
 		
 	'''Les Fonctions pour afficher l'image en fonction de  sa taille et de celle de l'ecran '''
 	def image_display(self, widget):
@@ -241,12 +246,22 @@ class Main():
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.image_modify_display(self)
 		
+	def old_school(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
+		if self.mode == "Normal":
+			newIm = Imagemodify.old_school(image, mode = "normal")
+		if self.mode == "Darken":
+			newIm = Imagemodify.old_school(image, mode = "darken")
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
 		
 	''' Création de l'interface '''
 	def __init__(self):
 		self.imageNumber = 0
 		#os.chdir(os.path.dirname(sys.argv[1]))
-		self.files_images = sorted([file for file in os.listdir(os.getcwd()) if file.split('.')[-1] in ['jpg', 'png', 'gif', 'jpeg', 'svg', 'jpeg']])
+		self.files_images = sorted([file for file in os.listdir(os.getcwd()) if file.split('.')[-1].lower() in ['jpg', 'png', 'gif', 'jpeg', 'svg', 'jpeg']])
 		#self.files_images.insert(0, os.path.basename(sys.argv[1]))
 		self.filesNumber = len(self.files_images)
 		self.new_image = ""
