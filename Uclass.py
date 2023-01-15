@@ -8,7 +8,7 @@ from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance, ImageDr
 class Imagemodify:
 	
 		
-	def uGrayscale(im, color = "gray"):
+	def uGrayscale(im, color = "gray", seuil = 127):
 		color = color
 		image = im
 		if color == "gray":
@@ -20,7 +20,7 @@ class Imagemodify:
 			return imgray
 			
 		if color == "blackWhite":
-			imBalckWhite = image.convert('L').point(lambda x: 255 if x > 127 else 0)
+			imBalckWhite = image.convert('L').point(lambda x: 255 if x > seuil else 0)
 			if image.mode == 'RGBA':
 				imageNew =  Imagemodify.addAlpha(image, imBalckWhite)
 				return imageNew
@@ -111,16 +111,16 @@ class Imagemodify:
 		width, height = image.size
 		
 		box = ((width//ratio), (height//ratio), (width//ratio)*(ratio-1), (height//ratio)*(ratio-1))
-		imEdge = image.filter(ImageFilter.MinFilter(size=3)) # assombri 
-		imEdge = imEdge.filter(ImageFilter.BLUR) # floute
-		#imEdge = image.filter(ImageFilter.BLUR)
 		
-		imCrop2 = im.crop(box) 
-		imCrop2 = Imagemodify.sharpness(imCrop2, factor = 2.0) # Augmente netteté (sharpness)
-		imCrop2 = Imagemodify.color(imCrop2, factor = 1.2) # Augmente color
-		#imCrop2 = Imagemodify.contrast(imCrop2, factor = 1.2) # AUgmente contrast
+		imEdge = image.filter(ImageFilter.MinFilter(size=3)) # assombri
+		imEdge = imEdge.filter(ImageFilter.BLUR) # floute 
+		imEdge = Imagemodify.color(imEdge, factor = 0.8) # down color
 		
-		calque = Image.new('L', (width, height), 255)
+		image = Imagemodify.sharpness(image, factor = 2.0) # Augmente netteté (sharpness)
+		image = Imagemodify.color(image, factor = 1.2) # Augmente color
+		image = Imagemodify.contrast(image, factor = 1.2)
+		
+		calque = Image.new('L', (width, height), 255) #creation du  calque
 		draw = ImageDraw.Draw(calque)
 		if forme == "rectangle":
 			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1, radius=44)
@@ -128,9 +128,9 @@ class Imagemodify:
 			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1)
 		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
 		
-		image.paste(imCrop2, (box))
+		#image.paste(imCrop2, (box)) # on recolle le centre sur l'image
 		
-		newim = ImageChops.composite(imEdge, image, calque)
+		newim = ImageChops.composite(imEdge, image, calque) # On applique le calque
 		return newim
 		
 	def old_school(im, mode = "normal"):
@@ -148,7 +148,7 @@ class Imagemodify:
 				if  item[2] in list(range(150, 225)) :  #151,170
 					new_image_data.append((218,165,32))
 				if item[2]  in list(range(225, 256)):
-					new_image_data.append((255,215,0))#or
+					new_image_data.append((255,215,0))#or Jaune claire
 			newim.putdata(new_image_data)
 			
 		if mode == "darken": 
@@ -161,8 +161,11 @@ class Imagemodify:
 					new_image_data.append((218,165,32))
 				if item[2]  in list(range(200, 256)):
 					new_image_data.append((255,215,0))#or
-			newim.putdata(new_image_data)	
-		
+			newim.putdata(new_image_data)
+				
+		if image.mode == 'RGBA':
+			newim =  Imagemodify.addAlpha(image, newim)
+			
 		return newim
 		
 	def color(im, factor = 1.2):
