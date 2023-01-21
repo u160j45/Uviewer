@@ -112,23 +112,21 @@ class Imagemodify:
 		
 		box = ((width//ratio), (height//ratio), (width//ratio)*(ratio-1), (height//ratio)*(ratio-1))
 		
-		imEdge = image.filter(ImageFilter.MinFilter(size=3)) # assombri
+		imEdge = image.filter(ImageFilter.MinFilter(size=3)) # assombri garde les pixels les plus foncer
 		imEdge = imEdge.filter(ImageFilter.BLUR) # floute 
 		imEdge = Imagemodify.color(imEdge, factor = 0.8) # down color
 		
 		image = Imagemodify.sharpness(image, factor = 2.0) # Augmente netteté (sharpness)
-		image = Imagemodify.color(image, factor = 1.2) # Augmente color
-		image = Imagemodify.contrast(image, factor = 1.2)
+		#image = Imagemodify.color(image, factor = 1.2) # Augmente color
+		image = Imagemodify.contrast(image, factor = 1.2) # Augmente contrast
 		
 		calque = Image.new('L', (width, height), 255) #creation du  calque
 		draw = ImageDraw.Draw(calque)
 		if forme == "rectangle":
 			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1, radius=44)
 		if forme == "ellipse":
-			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1)
+			draw.ellipse([box[0], box[1],box[2],  box[3]],fill=000, width=1)
 		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
-		
-		#image.paste(imCrop2, (box)) # on recolle le centre sur l'image
 		
 		newim = ImageChops.composite(imEdge, image, calque) # On applique le calque
 		return newim
