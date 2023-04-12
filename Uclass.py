@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
 
 from PIL import Image,  ImageFilter, ImageOps, ImageChops, ImageEnhance, ImageDraw
 
@@ -13,20 +12,15 @@ class Imagemodify:
 		image = im
 		if color == "gray":
 			if  image.mode == 'RGBA':
-				imgray = image.convert("LA")
+				imageNew = image.convert("LA")
 			if image.mode == 'RGB':
-				imgray = ImageOps.grayscale(image)
+				imageNew = ImageOps.grayscale(image)
 				
-			return imgray
-			
 		if color == "blackWhite":
-			imBalckWhite = image.convert('L').point(lambda x: 255 if x > seuil else 0)
+			imageNew= image.convert('L').point(lambda x: 255 if x > seuil else 0)
 			if image.mode == 'RGBA':
-				imageNew =  Imagemodify.addAlpha(image, imBalckWhite)
-				return imageNew
-				
-			return imBalckWhite
-		
+				imageNew =  Imagemodify.addAlpha(image, imageNew)
+
 		if color == "grayU": # gray darken
 			imBlackWhite  =  Imagemodify.uGrayscale(image, color = "blackWhite")
 			if imBlackWhite.mode == 'LA':
@@ -38,7 +32,7 @@ class Imagemodify:
 			if image.mode == 'RGBA':
 				imageNew =  Imagemodify.addAlpha(image, imageNew)
 				
-			return imageNew
+		return imageNew
 			
 	def negatif(im, color = "normal"):
 		''' Je n'utilise pas  ImageOps.invert ça me permet de traiter du RGB et RGBA '''
@@ -166,6 +160,31 @@ class Imagemodify:
 			
 		return newim
 		
+	def gray_color(im, forme = "rectangle", ratio = 10):
+		''' Contour gray , Centre Color '''
+		image = im
+		width, height = image.size
+		
+		box = ((width//ratio), (height//ratio), (width//ratio)*(ratio-1), (height//ratio)*(ratio-1))
+		if  image.mode == 'RGBA':
+			imageGray = image.convert("LA")
+		if image.mode == 'RGB':
+			imageGray = ImageOps.grayscale(image)
+			
+		calque = Image.new('L', (width, height), 255) #creation du  calque
+		draw = ImageDraw.Draw(calque)
+		if forme == "rectangle":
+			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1, radius=44)
+		if forme == "ellipse":
+			draw.ellipse([box[0], box[1],box[2],  box[3]],fill=000, width=1)
+			
+		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
+		
+		newim = ImageChops.composite(imageGray, image, calque) # On applique le calque
+		
+		return newim
+		
+		
 	def color(im, factor = 1.2):
 		image = im
 		enhancerColor = ImageEnhance.Color(image)
@@ -186,11 +205,11 @@ class Imagemodify:
 		
 	def addAlpha(im, imModify):
 		image = im
-		imAndAlpha = imModify
+		imAddAlpha = imModify
 		source = image.split()
 		maskAlpha = source[3]
-		imAndAlpha.putalpha(maskAlpha)
-		return imAndAlpha
+		imAddAlpha.putalpha(maskAlpha)
+		return imAddAlpha
 
 
 
