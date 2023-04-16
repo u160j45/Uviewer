@@ -8,7 +8,6 @@ class Imagemodify:
 	
 		
 	def uGrayscale(im, color = "gray", seuil = 127):
-		color = color
 		image = im
 		if color == "gray":
 			if  image.mode == 'RGBA':
@@ -72,7 +71,7 @@ class Imagemodify:
 		return imageNegatif
 		
 		
-	def dessin( im, mode = "normal", factor = 1.2):
+	def dessin( im, mode = "normal"):
 		image = im
 		if mode == "normal": 
 			imageDessin = image.filter(ImageFilter.EDGE_ENHANCE_MORE)
@@ -91,7 +90,8 @@ class Imagemodify:
 			
 		if mode == "peinture":
 			imageDessin = image.filter(ImageFilter.ModeFilter(6))
-			
+			#imageDessin =  ImageChops.darker(imageDessin, image)
+			#imageDessin =  ImageChops.lighter(imageDessin, image)
 		if image.mode == 'RGBA':
 			imageDessin =  Imagemodify.addAlpha(image, imageDessin)
 			
@@ -116,10 +116,13 @@ class Imagemodify:
 		
 		calque = Image.new('L', (width, height), 255) #creation du  calque
 		draw = ImageDraw.Draw(calque)
+		
 		if forme == "rectangle":
 			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1, radius=44)
+			
 		if forme == "ellipse":
 			draw.ellipse([box[0], box[1],box[2],  box[3]],fill=000, width=1)
+			
 		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
 		
 		newim = ImageChops.composite(imEdge, image, calque) # On applique le calque
@@ -160,8 +163,8 @@ class Imagemodify:
 			
 		return newim
 		
-	def gray_color(im, forme = "rectangle", ratio = 10):
-		''' Contour gray , Centre Color '''
+	def gray_border(im, forme = "rectangle", ratio = 10):
+		''' plus le ratio est grand plus la bordure sera petite, forme rectangle ou ellipse  '''
 		image = im
 		width, height = image.size
 		
@@ -177,13 +180,31 @@ class Imagemodify:
 			draw.rounded_rectangle([box[0], box[1],box[2],  box[3]],fill=000, width=1, radius=44)
 		if forme == "ellipse":
 			draw.ellipse([box[0], box[1],box[2],  box[3]],fill=000, width=1)
-			
-		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
 		
+		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
 		newim = ImageChops.composite(imageGray, image, calque) # On applique le calque
 		
 		return newim
 		
+	def damier(im, px=10):
+		image = im
+		width, height = image.size
+		if  image.mode == 'RGBA':
+			imageGray = image.convert("LA")
+		if image.mode == 'RGB':
+			imageGray = ImageOps.grayscale(image)
+		
+		#imageGray =  ImageOps.invert(image)
+		calque = Image.new('L', (width, height), 255) #creation du  calque
+		draw = ImageDraw.Draw(calque)
+		for i in range (height//px):#(width//10):
+				offset = px * (i % 2)
+				for k in range(width//px):#(height//10):
+					posx = (px*2) * k + offset
+					draw.rectangle(((posx, i*px), (posx+px), i*px+px), fill="#000000")
+		
+		newim = ImageChops.composite(imageGray, image, calque) # On applique le calque
+		return newim
 		
 	def color(im, factor = 1.2):
 		image = im
