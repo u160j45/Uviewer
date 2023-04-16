@@ -16,7 +16,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from PIL import Image
 from Uclass import Imagemodify
 
-CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "uBlurred_edge", "uModif", "uGrayscale"]
+CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "uBlurred_edge", "Gray_Border", "uGrayscale"]
 LARGEURMAX = Gdk.Screen().width() - 200
 HAUTEURMAX = Gdk.Screen().height() - 250
 
@@ -95,6 +95,11 @@ class Main():
 				self.startProgressbar(self)
 			self.confirmation()
 			
+			if self.choice == "Gray_Border":
+				self.thread = threading.Thread(target=self.gray_border)
+				self.thread.start()
+				self.startProgressbar(self)
+				
 			if self.choice == "Old_School":
 				self.thread = threading.Thread(target=self.old_school)
 				self.thread.start()
@@ -245,6 +250,20 @@ class Main():
 		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.image_modify_display(self)
+	
+	def gray_border(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
+		
+		if self.mode == "Normal": 
+			newIm = Imagemodify.gray_border(image, forme = "rectangle")
+			
+		if self.mode == "Darken":
+			newIm = Imagemodify.gray_border(image, forme = "ellipse")
+			
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
 		
 	def old_school(self):
 		self.progressbar.show()
@@ -260,8 +279,13 @@ class Main():
 	''' Création de l'interface '''
 	def __init__(self):
 		self.imageNumber = 0
+		#emplacement = os.getcwd()
+		#if len(sys.argv)-1 == 0:
+			#print("Lancer avec arguments:  ./uviewerGTK3.py /home/users/image.jpg")
+			#sys.exit()
+		
 		#os.chdir(os.path.dirname(sys.argv[1]))
-		self.files_images = sorted([file for file in os.listdir(os.getcwd()) if file.split('.')[-1].lower() in ['jpg', 'png', 'gif', 'jpeg', 'svg', 'jpeg']])
+		self.files_images = sorted([file for file in os.listdir(os.getcwd()) if file.split('.')[-1].lower() in ['jpg', 'png',  'jpeg', 'svg', 'jpeg']])
 		#self.files_images.insert(0, os.path.basename(sys.argv[1]))
 		self.filesNumber = len(self.files_images)
 		self.new_image = ""
