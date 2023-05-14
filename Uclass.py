@@ -163,6 +163,50 @@ class Imagemodify:
 			
 		return newim
 		
+	def diag_up(im, side = "right"):
+		''' Diagonal qui part du bas vers le haut '''
+		image = im
+		width, height = image.size
+		
+		imageGray = ImageOps.grayscale(image) # creat gray picture
+		
+		if side == "right": # Gray picture right
+			calque = Image.new('L', (width, height), 0) 
+			draw = ImageDraw.Draw(calque)
+			draw.polygon(((0,height),(width,height),(width,0)),fill=255) 
+			
+		if side == "left": # Gray picture left
+			calque = Image.new('L', (width, height), 255) 
+			draw = ImageDraw.Draw(calque)
+			draw.polygon(((0,height),(width,height),(width,0)),fill=0) 
+			
+		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
+		newim = ImageChops.composite(imageGray, image, calque)
+		
+		return newim
+		
+	def diag_down(im, side = "right"):
+		''' Diagonal qui part du haut vers le bas '''
+		image = im
+		width, height = image.size
+		
+		imageGray = ImageOps.grayscale(image) # creat gray picture
+		
+		if side == "right": # Gray picture right
+			calque = Image.new('L', (width, height), 0) 
+			draw = ImageDraw.Draw(calque)
+			draw.polygon(((0,0),(width, 0),(width, height)),fill=255)
+			
+		if side == "left": # Gray picture left
+			calque = Image.new('L', (width, height), 255) 
+			draw = ImageDraw.Draw(calque)
+			draw.polygon(((0,0),(width, 0),(width, height)),fill=0)
+			
+		calque = calque.filter(ImageFilter.GaussianBlur(40)) # Flou sur le calque pour Dégrader
+		newim = ImageChops.composite(imageGray, image, calque)
+		
+		return newim
+		
 	def gray_border(im, forme = "rectangle", ratio = 10):
 		''' plus le ratio est grand plus la bordure sera petite, forme rectangle ou ellipse  '''
 		image = im
@@ -186,15 +230,18 @@ class Imagemodify:
 		
 		return newim
 		
-	def damier(im, px=10):
+	def damier(im, mode = "Gray", px=10):
 		image = im
 		width, height = image.size
-		if  image.mode == 'RGBA':
-			imageGray = image.convert("LA")
-		if image.mode == 'RGB':
-			imageGray = ImageOps.grayscale(image)
-		
-		#imageGray =  ImageOps.invert(image)
+		if mode == "Gray":
+			if  image.mode == 'RGBA':
+				imageGray = image.convert("LA")
+			if image.mode == 'RGB':
+				imageGray = ImageOps.grayscale(image)
+				
+		if mode == "Invert":
+			imageGray =  ImageOps.invert(image)
+			
 		calque = Image.new('L', (width, height), 255) #creation du  calque
 		draw = ImageDraw.Draw(calque)
 		for i in range (height//px):#(width//10):
