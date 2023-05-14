@@ -16,7 +16,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from PIL import Image
 from Uclass import Imagemodify
 
-CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "uBlurred_edge", "Gray_Border", "uGrayscale"]
+CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "Damier", "uBlurred_edge", "Gray_Border", "uGrayscale", "Diagonal_up",  "Diagonal_down"]
 LARGEURMAX = Gdk.Screen().width() - 200
 HAUTEURMAX = Gdk.Screen().height() - 250
 
@@ -99,11 +99,27 @@ class Main():
 				self.thread = threading.Thread(target=self.gray_border)
 				self.thread.start()
 				self.startProgressbar(self)
+			
+			if self.choice == "Damier":
+				self.thread = threading.Thread(target=self.damier)
+				self.thread.start()
+				self.startProgressbar(self)
 				
 			if self.choice == "Old_School":
 				self.thread = threading.Thread(target=self.old_school)
 				self.thread.start()
 				self.startProgressbar(self)
+				
+			if self.choice == "Diagonal_up":
+				self.thread = threading.Thread(target=self.diag_up)
+				self.thread.start()
+				self.startProgressbar(self)
+				
+			if self.choice == "Diagonal_down":
+				self.thread = threading.Thread(target=self.diag_down)
+				self.thread.start()
+				self.startProgressbar(self)
+				
 			self.confirmation()
 		
 	'''Les Fonctions pour afficher l'image en fonction de  sa taille et de celle de l'ecran '''
@@ -265,6 +281,20 @@ class Main():
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.image_modify_display(self)
 		
+	def damier(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
+		
+		if self.mode == "Normal": # Color Gray
+			newIm = Imagemodify.damier(image, px = 10) # px taille en pixel pour le damier Gray
+			
+		if self.mode == "Darken": # Invert color 
+			newIm = Imagemodify.damier(image,mode = "Invert", px = 100) # px taille en pixel pour le damier Negatif
+			
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
+		
 	def old_school(self):
 		self.progressbar.show()
 		image = Image.open(self.imageName)
@@ -275,6 +305,31 @@ class Main():
 		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.image_modify_display(self)
+		
+	def diag_up(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
+		if self.mode == "Normal":
+			newIm = Imagemodify.diag_up(image, side = "right")
+		if self.mode == "Darken":
+			newIm = Imagemodify.diag_up(image, side = "left")
+			
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
+		
+	def diag_down(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
+		if self.mode == "Normal":
+			newIm = Imagemodify.diag_down(image, side = "right")
+		if self.mode == "Darken":
+			newIm = Imagemodify.diag_down(image, side = "left")
+			
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
+		
 		
 	''' Création de l'interface '''
 	def __init__(self):
