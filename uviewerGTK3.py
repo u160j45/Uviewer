@@ -7,7 +7,6 @@
 
 import os,sys
 import threading
-import numpy as np
 
 import gi 
 gi.require_version('Gtk', '3.0')
@@ -16,7 +15,8 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 from PIL import Image
 from Uclass import Imagemodify
 
-CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "Damier", "uBlurred_edge", "Gray_Border", "uGrayscale", "Diagonal_up",  "Diagonal_down"]
+CATEGORIE_FILTRE = ["Dessin", "Négatif","Old_School", "Damier", "uBlurred_edge", "Gray_Border", "uGrayscale", "Diagonal_up",  "Diagonal_down",
+										"Sépia"]
 LARGEURMAX = Gdk.Screen().width() - 200
 HAUTEURMAX = Gdk.Screen().height() - 250
 
@@ -117,6 +117,10 @@ class Main():
 				
 			if self.choice == "Diagonal_down":
 				self.thread = threading.Thread(target=self.diag_down)
+				self.thread.start()
+				self.startProgressbar(self)
+			if self.choice == "Sépia":
+				self.thread = threading.Thread(target=self.sepia)
 				self.thread.start()
 				self.startProgressbar(self)
 				
@@ -289,7 +293,7 @@ class Main():
 			newIm = Imagemodify.damier(image, px = 10) # px taille en pixel pour le damier Gray
 			
 		if self.mode == "Darken": # Invert color 
-			newIm = Imagemodify.damier(image,mode = "Invert", px = 100) # px taille en pixel pour le damier Negatif
+			newIm = Imagemodify.damier(image,mode = "Invert", px = 10) # px taille en pixel pour le damier Negatif
 			
 		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
@@ -325,6 +329,19 @@ class Main():
 			newIm = Imagemodify.diag_down(image, side = "right")
 		if self.mode == "Darken":
 			newIm = Imagemodify.diag_down(image, side = "left")
+			
+		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
+		self.image_modify_display(self)
+		
+	def sepia(self):
+		self.progressbar.show()
+		image = Image.open(self.imageName)
+		if self.mode == "Normal":
+			newIm = Imagemodify.sepia(image)
+		if self.mode == "Darken":
+			newIm = Imagemodify.sepia(image)
+			newIm = Imagemodify.gray_border(newIm, forme = "ellipse", ratio = 10)
 			
 		newIm.save(os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
 		self.new_image = (os.path.splitext(self.imageName)[0] + '_' + self.choice + '_' + self.mode + '.png')
