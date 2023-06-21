@@ -62,7 +62,7 @@ class Imagemodify:
 			source[V].paste(maskRouge)
 			source[B].paste(maskRouge)
 			
-		if color == "purple": # Negatif 
+		if color == "purple": # Negatif purple
 			source[R].paste(maskBleu) 
 			source[V].paste(maskRouge)
 			source[B].paste(maskVert)
@@ -70,6 +70,27 @@ class Imagemodify:
 		imageNegatif = Image.merge(image.mode, source)
 		return imageNegatif
 		
+	def sepia(im):
+		image = im
+		source = image.split()
+		if  image.mode == 'RGBA':
+			imageNew  = image.convert("LA")
+		if image.mode == 'RGB':
+			imageNew  =  ImageOps.grayscale(image)
+		
+		imageNew  = imageNew.convert('RGB')
+		source2 = imageNew.split()
+		R, V, B = 0, 1, 2
+		maskRouge = source2[R].point(lambda i: int(i * 0.393 + (i+1)* 0.769 + (i+2)* 0.189 ))
+		maskVert = source2[V].point(lambda i:  int( i * 0.349 + (i+1)*0.686 + (i+2)*0.168))
+		maskBleu = source2[B].point(lambda i:  int(i * 0.272 +(i+1)* 0.534 + (i+2)*0.131))
+		
+		source[R].paste(maskRouge)
+		source[V].paste(maskVert)
+		source[B].paste(maskBleu)
+
+		imSepia = Image.merge(image.mode, source)
+		return imSepia
 		
 	def dessin( im, mode = "normal"):
 		image = im
@@ -168,7 +189,8 @@ class Imagemodify:
 		image = im
 		width, height = image.size
 		
-		imageGray = ImageOps.grayscale(image) # creat gray picture
+		#imageGray = ImageOps.grayscale(image) # creat gray picture
+		imageGray =   Imagemodify.brightness(image, factor = 0.8)
 		
 		if side == "right": # Gray picture right
 			calque = Image.new('L', (width, height), 0) 
@@ -190,7 +212,8 @@ class Imagemodify:
 		image = im
 		width, height = image.size
 		
-		imageGray = ImageOps.grayscale(image) # creat gray picture
+		#imageGray = ImageOps.grayscale(image) # creat gray picture
+		imageGray =   Imagemodify.brightness(image, factor = 0.8)
 		
 		if side == "right": # Gray picture right
 			calque = Image.new('L', (width, height), 0) 
@@ -215,8 +238,9 @@ class Imagemodify:
 		box = ((width//ratio), (height//ratio), (width//ratio)*(ratio-1), (height//ratio)*(ratio-1))
 		if  image.mode == 'RGBA':
 			imageGray = image.convert("LA")
-		if image.mode == 'RGB':
-			imageGray = ImageOps.grayscale(image)
+		if image.mode == 'RGB' or  image.mode == 'L':
+			#imageGray = ImageOps.grayscale(image)
+			imageGray =   Imagemodify.brightness(image, factor = 0.8)
 			
 		calque = Image.new('L', (width, height), 255) #creation du  calque
 		draw = ImageDraw.Draw(calque)
@@ -240,7 +264,8 @@ class Imagemodify:
 				imageGray = ImageOps.grayscale(image)
 				
 		if mode == "Invert":
-			imageGray =  ImageOps.invert(image)
+			#imageGray =  ImageOps.invert(image)
+			imageGray =   Imagemodify.brightness(image, factor = 0.5)
 			
 		calque = Image.new('L', (width, height), 255) #creation du  calque
 		draw = ImageDraw.Draw(calque)
@@ -254,24 +279,38 @@ class Imagemodify:
 		return newim
 		
 	def color(im, factor = 1.2):
+		''' factor = 1.0 image d'origine, factor =  0.0 noir et blanc et de 1.1 à 2.0 augmente la couleur'''
 		image = im
 		enhancerColor = ImageEnhance.Color(image)
 		newIm = enhancerColor.enhance(factor)
 		return newIm
 		
 	def sharpness(im, factor = 1.9):
+		'''Un facteur d'amélioration de 0.0 donne une image floue, un facteur de 1.0 donne l'image d'origine
+		et un facteur de 2.0 donne une image plus nette.'''
 		image = im
 		enhancerSharpness = ImageEnhance.Sharpness(image)
 		newIm = enhancerSharpness.enhance(factor)
 		return newIm
 	
 	def contrast(im, factor = 1.2):
+		''' Un facteur d'amélioration de 0.0 donne une image grise unie. Un facteur de 1.0 donne l'image d'origine
+		et de 1.0 à 2.0 augmente le contrast'''
 		image = im
 		enhancerContrast = ImageEnhance.Contrast(image)
 		newIm = enhancerContrast.enhance(factor)
 		return newIm
 		
+	def  brightness( im , factor = 1.2):
+		'''Un facteur d'amélioration de 0.0 donne une image noir . Un facteur de 1.0 donne l'image d'origine
+		et de 1.0 à 2.0 augmente la luminosité'''
+		image = im
+		enhancerBrightness = ImageEnhance.Brightness(image)
+		newIm = enhancerBrightness.enhance(factor)
+		return newIm
+		
 	def addAlpha(im, imModify):
+		''' Ajoute le canal alpha de l'image d'origine à l'image modifiée'''
 		image = im
 		imAddAlpha = imModify
 		source = image.split()
